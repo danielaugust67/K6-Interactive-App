@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  k6-image:
+    build:
+      context: ./k6
+      dockerfile: Dockerfile
+    volumes:
+      - "D:/:/D"
+      - ./output:/app/output
+    stdin_open: true
+    tty: true
+
+  converter-image:
+    build:
+      context: ./converter
+      dockerfile: Dockerfile
+    volumes:
+      - "D:/:/D"
+      - ./output:/app/output
+    stdin_open: true
+    tty: true
+
+  jmeter-image:
+    build:
+      context: ./jmeter
+      dockerfile: Dockerfile
+    volumes:
+      - "D:/:/D"
+      - ./output:/app/output
+    stdin_open: true
+    tty: true
+    environment:
+      - INPUT_PATH=/D/path/to/input.csv  
+      - OUTPUT_PATH=/D/path/to/output    
+
+  integrator-image:
+    build:
+      context: ./integrator
+      dockerfile: Dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Akses ke Docker host
+      - ./output:/app/output
+    stdin_open: true
+    tty: true
+    depends_on:
+      - jmeter-image
+      - k6-image
+      - converter-image
+    command: ["node", "integrator.js"]  # Ini menggantikan CMD di Dockerfile
